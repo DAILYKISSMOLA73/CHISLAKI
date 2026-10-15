@@ -20,6 +20,8 @@ def newton(f, var, x0, eps, max_iter):
             return x_new
 
         x = x_new
+    print("Метод Ньютона не сошёлся за заданное число итераций.")
+    
 
 def simple_iter(phi, var, x0, eps, max_iter):
     
@@ -34,7 +36,7 @@ def simple_iter(phi, var, x0, eps, max_iter):
         if abs(x_new-x) < eps:
             return x_new
         x = x_new
-    print("Метод не сошёлся за заданное число итераций.")
+    print("Метод итераций не сошёлся за заданное число итераций.")
 
 
 
