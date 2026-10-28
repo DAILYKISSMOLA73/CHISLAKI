@@ -1,5 +1,4 @@
 import sympy as sp
-import numpy as np
 
 def lagrange(nodes, f_expr, x):
     n = len(nodes)
