@@ -21,6 +21,49 @@ def peregonka(a, b, c, f):
     return x
 
 
+def seidel(A, b, eps, max_iter):
+
+    n = len(b)
+    x = np.zeros(n)
+
+    alpha = np.zeros((n, n))
+    beta = np.zeros(n)
+
+    for i in range(n):
+        beta[i] = b[i]/A[i][i]
+
+        for j in range(n):
+            if i != j:
+                alpha[i][j] = -A[i][j]/A[i][i]
+
+    x = beta.copy()
+
+    for k in range(max_iter):
+
+        x_old = x.copy()
+
+        for i in range(n):
+
+            x[i] = beta[i]
+
+            for j in range(n):
+
+                if j < i:
+                    x[i] += alpha[i][j]*x[j]
+
+                elif j > i:
+                    x[i] += alpha[i][j]*x_old[j]
+
+        error = np.max(np.abs(x - x_old))
+
+        if error < eps:
+            return x
+
+    print("Метод Зейделя не сошелся за заданное количество итераций")
+    return None
+
+
+
 def spline(x, y):
     n = len(x)
     h = [x[i+1]-x[i] for i in range(n-1)]
@@ -66,6 +109,48 @@ def spline_value(x0, x, A, B, C, D):
     dx = x0-x[i]
     return (A[i] + B[i]*dx + C[i]*dx**2 + D[i]*dx**3)
 
+def mnk(x, y, m):
+
+    n = len(x)
+
+    S = [0.0]*(2*m+1)
+    t = [0.0]*(m+1)
+
+    for k in range(2*m+1):
+
+        for i in range(n):
+            S[k] += x[i]**k
+
+    for k in range(m+1):
+
+        for i in range(n):
+            t[k] += (x[i]**k)*y[i]
+
+    A = [[0.0]*(m+1) for i in range(m+1)]
+
+    for i in range(m+1):
+
+        for j in range(m+1):
+            A[i][j] = S[i+j]
+
+    b = t
+
+    a = seidel(A, b, 0.000001, 10000)
+
+    phi = 0
+
+    for i in range(n):
+
+        y_calc = 0
+
+        for j in range(m+1):
+            y_calc += a[j]*x[i]**j
+
+        phi += (y_calc-y[i])**2
+
+    return a, phi
+
+# сплайн
 x = [-2.0, -1.0, 0.0, 1.0, 2.0]
 y = [-1.8647, -0.63212, 1.0, 3.7183, 9.3891]
 
@@ -73,6 +158,7 @@ A, B, C, D = spline(x, y)
 
 X = sp.symbols('x')
 
+print("\nСплайн\n")
 for i in range(len(x)-1):
 
     dx = X - x[i]
@@ -87,3 +173,23 @@ for i in range(len(x)-1):
 x0 = -0.5 
 result = spline_value(x0, x, A, B, C, D)
 print(f"S({x0}) = {result:.6f}")
+
+# МНК
+
+x2 = [-3, -2, -1, 0, 1, 2]
+y2 = [-2.9502, -1.8647, -0.63212, 1.0, 3.7183, 9.3891]
+
+n = len(x2)
+
+a1, phi1 = mnk(x2, y2, 1)
+
+a2, phi2 = mnk(x2, y2, 2)
+
+print("\nМНК")
+print("\nМногочлен первой степени:")
+print(f"Q1(x) = {a1[0]:.6f} + ({a1[1]:.6f})*x")
+print(f"Сумма квадратов ошибок Phi = {phi1:.6f}")
+
+print("\nМногочлен второй степени:")
+print(f"Q2(x) = {a2[0]:.6f} + ({a2[1]:.6f})*x + ({a2[2]:.6f})*x**2")
+print(f"Сумма квадратов ошибок Phi = {phi2:.6f}")
